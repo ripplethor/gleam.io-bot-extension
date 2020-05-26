@@ -1,3 +1,4 @@
+#![recursion_limit="512"]
 use wasm_bindgen::prelude::*;
 use web_sys::*;
 mod enums;
@@ -6,6 +7,7 @@ mod util;
 mod bot_logic;
 use bot_logic::*;
 mod yew_app;
+mod checkbox;
 use yew_app::*;
 use yew::prelude::App;
 
@@ -16,10 +18,16 @@ pub async fn main() {
 
     let window = window().expect("No window");
     let document = window.document().expect("No document");
+
     let panel = document.create_element("div").unwrap();
-    panel.set_attribute("style", "border-top: 1px solid black; padding: .5rem 0 .5rem 0;").unwrap();
+    panel.set_attribute("id", "bot_panel").unwrap();
+
+    let style = document.create_element("style").unwrap();
+    style.set_attribute("scoped", "").unwrap();
+    style.set_inner_html(include_str!("style.css"));
 
     let panel_container = document.get_elements_by_class_name("incentive-description").item(0).unwrap();
+    panel_container.append_child(&style).unwrap();
     panel_container.append_child(&panel).unwrap();
 
     yew::initialize();
