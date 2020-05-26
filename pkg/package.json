@@ -1,0 +1,15 @@
+{
+  "name": "gleam-extension",
+  "collaborators": [
+    "Mubelotix <mubelotix@gmail.com>"
+  ],
+  "version": "0.2.0",
+  "files": [
+    "gleam_extension_bg.wasm",
+    "gleam_extension.js",
+    "gleam_extension.d.ts"
+  ],
+  "module": "gleam_extension.js",
+  "types": "gleam_extension.d.ts",
+  "sideEffects": false
+}
