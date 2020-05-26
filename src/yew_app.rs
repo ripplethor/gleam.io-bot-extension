@@ -26,6 +26,7 @@ pub enum Msg {
     Done,
     ProgressChange(usize),
     EmailUpdate(String),
+    NameUpdate(String),
     ChangeTab(Tab),
     Launch,
 }
@@ -44,7 +45,7 @@ impl Component for Model {
             String::from("unknown@email.com")
         };
 
-        let infos = Arc::new(Mutex::new((email, String::from("Unknown Name"))));
+        let infos = Arc::new(Mutex::new((email, storage.get("gleam_bot_name").ok().flatten().unwrap_or_else(|| String::from("Undefined Random")))));
 
         Self {
             link,
@@ -67,6 +68,15 @@ impl Component for Model {
                     Err(poisoned) => poisoned.into_inner(),
                 };
                 guard.0 = email;
+            }
+            Msg::NameUpdate(name) => {
+                self.storage.set("gleam_bot_name", &name).unwrap();
+
+                let mut guard = match self.infos.lock() {
+                    Ok(guard) => guard,
+                    Err(poisoned) => poisoned.into_inner(),
+                };
+                guard.1 = name;
             }
             Msg::ChangeTab(tab) => {
                 self.tab = tab;
@@ -98,12 +108,19 @@ impl Component for Model {
             "unknown@email.com" => "",
             email => email
         };
+        let name = match guard.1.as_str() {
+            "Undefined Random" => "",
+            name => name
+        };
 
         match self.tab {
             Tab::Main => {
                 html! {
                     <div>
-                        {"Welcome!"}<br/>
+                        <h2>{"Top Secret Control Panel"}</h2>
+                        <p>
+                            {"Thank you for using the bot!"}
+                        </p>
                         <br/>
                         <div class=if self.in_progress {"progress_bar in_progress"}else{"progress_bar"} >
                             <div style=format!("width: {}%", self.progress)>
@@ -127,7 +144,15 @@ impl Component for Model {
             Tab::Settings => {
                 html! {
                     <div>
-                        <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="alice.smith@example.com" oninput=self.link.callback(|e: InputData| Msg::EmailUpdate(e.value)) value=email/><br/>
+                        <label>
+                            {"Your email: "}
+                            <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="alice.smith@example.com" oninput=self.link.callback(|e: InputData| Msg::EmailUpdate(e.value)) value=email/>
+                        </label><br/>
+
+                        <label>
+                            {"Your name: "}
+                            <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="Alice Smith" oninput=self.link.callback(|e: InputData| Msg::NameUpdate(e.value)) value=name/>
+                        </label><br/>
         
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on Twitch"/>
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Tweet"/>
