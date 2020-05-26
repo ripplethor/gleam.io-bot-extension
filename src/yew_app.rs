@@ -19,7 +19,7 @@ pub struct Model {
     storage: Storage,
     tab: Tab,
     progress: usize,
-    in_progress: bool,
+    progress_state: BotState,
 }
 
 pub enum Msg {
@@ -29,6 +29,13 @@ pub enum Msg {
     NameUpdate(String),
     ChangeTab(Tab),
     Launch,
+}
+
+#[derive(PartialEq)]
+pub enum BotState {
+    Waiting,
+    Running,
+    Ended
 }
 
 impl Component for Model {
@@ -53,13 +60,13 @@ impl Component for Model {
             storage,
             tab: Tab::Main,
             progress: 0,
-            in_progress: false,
+            progress_state: BotState::Waiting,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Done => (),
+            Msg::Done => self.progress_state = BotState::Ended,
             Msg::EmailUpdate(email) => {
                 self.storage.set("gleam_bot_email", &email).unwrap();
 
@@ -85,11 +92,11 @@ impl Component for Model {
                 self.progress = p;
             },
             Msg::Launch => {
-                if !self.in_progress {
+                if self.progress_state == BotState::Waiting {
                     let link2 = Rc::clone(&self.link);
                     let infos2 = Arc::clone(&self.infos);
                     self.progress = 0;
-                    self.in_progress = true;
+                    self.progress_state = BotState::Running;
                     spawn_local(async move {
                         run(link2, infos2).await;
                     })
@@ -122,18 +129,20 @@ impl Component for Model {
                             {"Thank you for using the bot!"}
                         </p>
                         <br/>
-                        <div class=if self.in_progress {"progress_bar in_progress"}else{"progress_bar"} >
+                        <div class=if self.progress_state != BotState::Waiting {"progress_bar in_progress"}else{"progress_bar"} >
                             <div style=format!("width: {}%", self.progress)>
                             </div>
                         </div>
                         <br/>
                         {
-                            if !self.in_progress {
-                                html! { <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::Launch)>{"Launch"}</button> }
-                            } else {
-                                html! {
+                            match self.progress_state {
+                                BotState::Waiting => html! { <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::Launch)>{"Launch"}</button> },
+                                BotState::Running => html! {
                                     { "The bot is running." }
-                                }
+                                },
+                                BotState::Ended => html! {
+                                    { "The bot has finished." }
+                                },
                             }
                         }<br/><br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Settings))>{"Settings"}</button><br/><br/>
@@ -153,7 +162,9 @@ impl Component for Model {
                             {"Your name: "}
                             <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="Alice Smith" oninput=self.link.callback(|e: InputData| Msg::NameUpdate(e.value)) value=name/>
                         </label><br/>
-        
+                    
+                        {"INFO: These options are a preview of the next update. For now it is not working at all."}<br/>
+                        <br/>
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on Twitch"/>
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Tweet"/>
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Retweet"/>
@@ -166,7 +177,7 @@ impl Component for Model {
             Tab::Stats => {
                 html! {
                     <div>
-                        {"Stats will be available soon"}<br/>
+                        {"Stats will be available soon. Boost my efficiency by writing a mail at mubelotix@gmail.com!"}<br/>
                         <br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Main))>{"Go back"}</button>
                     </div>

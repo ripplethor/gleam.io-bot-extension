@@ -5,7 +5,6 @@ mod enums;
 #[macro_use]
 mod util;
 mod bot_logic;
-use bot_logic::*;
 mod yew_app;
 mod checkbox;
 use yew_app::*;
