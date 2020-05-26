@@ -1,6 +1,5 @@
 use yew::prelude::*;
 use std::rc::Rc;
-use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::*;
 use std::sync::{Arc, Mutex};
 use crate::checkbox::*;
