@@ -69,3 +69,14 @@ pub struct CheckboxProp<T: Clone + Default> {
     #[prop_or_default]
     pub onchange: Callback<(bool, T)>,
 }
+
+#[derive(Clone)]
+pub enum CheckboxId {
+    Twitter
+}
+
+impl Default for CheckboxId {
+    fn default() -> CheckboxId {
+        CheckboxId::Twitter
+    }
+}

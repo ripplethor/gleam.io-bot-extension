@@ -10,21 +10,7 @@ use crate::yew_app::{Model, Msg};
 use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
 
-pub fn start(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) {
-    let link = Rc::clone(&link);
-    let _promise = wasm_bindgen_futures::future_to_promise(run(link, infos));
-    /*let ok = Closure::wrap(Box::new(move |_event: JsValue|  {
-        eval("console.log('ok');");
-    }) as Box<dyn FnMut(_)>);
-    let err = Closure::wrap(Box::new(move |_event: JsValue|  {
-        eval("console.log('err');");
-    }) as Box<dyn FnMut(_)>);
-    promise.then2(&ok, &err);
-    ok.forget();
-    err.forget();*/
-}
-
-async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
+pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
     let window = window().expect("No window");
     let document = window.document().expect("No document");
 
@@ -163,6 +149,8 @@ async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>
         }
     }
 
+    let len = entries.len() as f64;
+    let mut current = 0.0;
     for (original_entry, entry) in entries {
         match EntryType::try_from(entry.get_attribute("data-track-event").unwrap()) {
             Ok(entry_type) => {
@@ -664,6 +652,9 @@ async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>
             }
             Err(e) => console::error_1(&JsValue::from(e)),
         }
+
+        current += 1.0;
+        link.send_message(Msg::ProgressChange(((100.0/len)*current).floor() as usize))
     }
 
     link.send_message(Msg::Done);

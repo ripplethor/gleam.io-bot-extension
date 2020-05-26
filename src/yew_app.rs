@@ -2,37 +2,32 @@ use yew::prelude::*;
 use std::rc::Rc;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::*;
-use crate::start;
 use std::sync::{Arc, Mutex};
-use crate::checkbox::Checkbox;
+use crate::checkbox::*;
+use crate::bot_logic::run;
+use wasm_bindgen_futures::*;
 
-#[derive(PartialEq)]
-pub enum ProcessState {
-    Waiting,
-    Running,
-    Done
+pub enum Tab {
+    Main,
+    Settings,
+    Stats,
 }
 
 pub struct Model {
     link: Rc<ComponentLink<Self>>,
     infos: Arc<Mutex<(String, String)>>,
     storage: Storage,
+    tab: Tab,
+    progress: usize,
+    in_progress: bool,
 }
 
 pub enum Msg {
     Done,
+    ProgressChange(usize),
     EmailUpdate(String),
-}
-
-#[derive(Clone)]
-pub enum CheckboxId {
-    Twitter
-}
-
-impl Default for CheckboxId {
-    fn default() -> CheckboxId {
-        CheckboxId::Twitter
-    }
+    ChangeTab(Tab),
+    Launch,
 }
 
 impl Component for Model {
@@ -54,7 +49,10 @@ impl Component for Model {
         Self {
             link,
             infos,
-            storage
+            storage,
+            tab: Tab::Main,
+            progress: 0,
+            in_progress: false,
         }
     }
 
@@ -70,6 +68,23 @@ impl Component for Model {
                 };
                 guard.0 = email;
             }
+            Msg::ChangeTab(tab) => {
+                self.tab = tab;
+            }
+            Msg::ProgressChange(p) => {
+                self.progress = p;
+            },
+            Msg::Launch => {
+                if !self.in_progress {
+                    let link2 = Rc::clone(&self.link);
+                    let infos2 = Arc::clone(&self.infos);
+                    self.progress = 0;
+                    self.in_progress = true;
+                    spawn_local(async move {
+                        run(link2, infos2).await;
+                    })
+                }
+            },
         }
         true
     }
@@ -84,16 +99,54 @@ impl Component for Model {
             email => email
         };
 
-        html! {
-            <div>
-                <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="alice.smith@example.com" oninput=self.link.callback(|e: InputData| Msg::EmailUpdate(e.value)) value=email/><br/>
+        match self.tab {
+            Tab::Main => {
+                html! {
+                    <div>
+                        {"Welcome!"}<br/>
+                        <br/>
+                        <div class=if self.in_progress {"progress_bar in_progress"}else{"progress_bar"} >
+                            <div style=format!("width: {}%", self.progress)>
+                            </div>
+                        </div>
+                        <br/>
+                        {
+                            if !self.in_progress {
+                                html! { <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::Launch)>{"Launch"}</button> }
+                            } else {
+                                html! {
+                                    { "The bot is running." }
+                                }
+                            }
+                        }<br/><br/>
+                        <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Settings))>{"Settings"}</button><br/><br/>
+                        <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Stats))>{"Stats"}</button>
+                    </div>
+                }
+            }
+            Tab::Settings => {
+                html! {
+                    <div>
+                        <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="alice.smith@example.com" oninput=self.link.callback(|e: InputData| Msg::EmailUpdate(e.value)) value=email/><br/>
+        
+                        <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on Twitch"/>
+                        <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Tweet"/>
+                        <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Retweet"/>
+                        <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on twitter"/>
 
-                <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on Twitch"/>
-                <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Tweet"/>
-                <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Retweet"/>
-                <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on twitter"/>
-                {"Other options are not controllable for now"}
-            </div>
+                        <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Main))>{"Save"}</button>
+                    </div>
+                }
+            },
+            Tab::Stats => {
+                html! {
+                    <div>
+                        {"Stats will be available soon"}<br/>
+                        <br/>
+                        <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Main))>{"Go back"}</button>
+                    </div>
+                }
+            }
         }
     }
 
