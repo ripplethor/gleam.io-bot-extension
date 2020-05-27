@@ -23,3 +23,51 @@
     border-radius: .3rem;
     transition: width 2.5s, background-color .5s;
 }
+
+.warn_message {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border: 1px solid #faebcc;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+.stat_message {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+.tip_message {
+    color: #31708f;
+    background-color: #d9edf7;
+    border: 1px solid #bce8f1;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+.danger_message {
+    color: #a94442;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+.info_message {
+    color: black;
+    background-color: #f5f5fe;
+    border: 1px solid #3689C5;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+.unknown_message {
+    color: black;
+    background-color: #cecece;
+    border: 1px solid grey;
+    padding: .5rem;
+    border-radius: 5px;
+}

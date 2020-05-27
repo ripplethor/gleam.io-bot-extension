@@ -6,6 +6,7 @@ mod enums;
 mod util;
 mod bot_logic;
 mod yew_app;
+mod messages;
 mod checkbox;
 use yew_app::*;
 use yew::prelude::App;
