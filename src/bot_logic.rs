@@ -9,6 +9,124 @@ use yew::prelude::*;
 use crate::yew_app::{Model, Msg};
 use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
+use string_tools::*;
+
+async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(String, String)>>, where_to_find_save_button: &Element) -> Result<(), JsValue> {
+    let inputs = original_entry.get_elements_by_tag_name("input");
+    let mut input_elements = Vec::new();
+    for idx in 0..inputs.length() {
+        input_elements.push(inputs.item(idx).unwrap());
+    }
+    for input in input_elements {
+        match input.get_attribute("placeholder") {
+            Some(placeholder) if placeholder == "Alice Smith" => {
+                let input: HtmlInputElement = input.dyn_into()?;
+                input.click();
+                input
+                    .focus()
+                    .unwrap_or_else(|_e| log!("can't focus input"));
+
+                input.set_value(&infos.lock().unwrap().1);
+
+                if let Ok(input) = input.dyn_into::<EventTarget>() {
+                    if let Ok(event) = InputEvent::new("input") {
+                        if input.dispatch_event(&event).is_ok() {
+                            sleep(Duration::from_secs(3)).await;
+                        }
+                    }
+                }
+            },
+            Some(placeholder) if placeholder == "Alice" => {
+                let input: HtmlInputElement = input.dyn_into()?;
+                input.click();
+                input
+                    .focus()
+                    .unwrap_or_else(|_e| log!("can't focus input"));
+
+                input.set_value(get_all_before(&infos.lock().unwrap().1, " "));
+
+                if let Ok(input) = input.dyn_into::<EventTarget>() {
+                    if let Ok(event) = InputEvent::new("input") {
+                        if input.dispatch_event(&event).is_ok() {
+                            sleep(Duration::from_secs(3)).await;
+                        }
+                    }
+                }
+            },
+            Some(placeholder) if placeholder == "Smith" => {
+                let input: HtmlInputElement = input.dyn_into().unwrap();
+                input.click();
+                input
+                    .focus()
+                    .unwrap_or_else(|_e| log!("can't focus input"));
+
+                input.set_value(get_all_after(&infos.lock().unwrap().1, " "));
+
+                if let Ok(input) = input.dyn_into::<EventTarget>() {
+                    if let Ok(event) = InputEvent::new("input") {
+                        if input.dispatch_event(&event).is_ok() {
+                            sleep(Duration::from_secs(3)).await;
+                        }
+                    }
+                }
+            },
+            Some(placeholder) if placeholder == "alice.smith@example.com" => {
+                let input: HtmlInputElement = input.dyn_into()?;
+                input.click();
+                input
+                    .focus()
+                    .unwrap_or_else(|_e| log!("can't focus input"));
+
+                input.set_value(&infos.lock().unwrap().0);
+
+                if let Ok(input) = input.dyn_into::<EventTarget>() {
+                    if let Ok(event) = InputEvent::new("input") {
+                        if input.dispatch_event(&event).is_ok() {
+                            sleep(Duration::from_secs(3)).await;
+                        }
+                    }
+                }
+            },
+            Some(placeholder) if placeholder == "MM/DD/YYYY" || placeholder == "DD/MM/YYYY" => {
+                let input: HtmlInputElement = input.dyn_into()?;
+                input.click();
+                input
+                    .focus()
+                    .unwrap_or_else(|_e| log!("can't focus input"));
+
+                input.set_value("02/02/1964");
+
+                if let Ok(input) = input.dyn_into::<EventTarget>() {
+                    if let Ok(event) = InputEvent::new("input") {
+                        if input.dispatch_event(&event).is_ok() {
+                            sleep(Duration::from_secs(3)).await;
+                        }
+                    }
+                }
+            },
+            _ if input.get_attribute("type") == Some(String::from("checkbox")) => if input.get_attribute("ng-required") == Some(String::from("true")) {
+                let input: HtmlElement = input.dyn_into()?;
+                input.click();
+                sleep(Duration::from_secs(3)).await;
+            }
+            placeholder => log!("Strange input element: placeholder {:?}, type: {:?}", placeholder, input.get_attribute("type"))
+        }
+    }
+
+    // save button
+    if let Some(save_button) = where_to_find_save_button
+        .get_elements_by_class_name("btn btn-primary") // removed ng-scope
+        .item(0)
+    {
+        let save_button: HtmlElement =
+            save_button.dyn_into()?;
+        save_button.click();
+
+        sleep(Duration::from_secs(2)).await;
+    }
+
+    Ok(())
+}
 
 pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
     let window = window().expect("No window");
@@ -19,119 +137,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     // form asking name, email and birthdate
     if let Some(form) = document.get_elements_by_class_name("contestant compact-box form-compact ng-pristine ng-scope ng-valid-pattern ng-invalid ng-invalid-required ng-valid-email").item(0) {
 
-        let inputs = form.get_elements_by_tag_name("input");
-        let mut input_elements = Vec::new();
-        for idx in 0..inputs.length() {
-            input_elements.push(inputs.item(idx).unwrap());
-        }
-        for input in input_elements {
-            log!("found input {}", input.client_height());
-            match input.get_attribute("placeholder") {
-                Some(placeholder) if placeholder == "Alice Smith" => {
-                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                    input.click();
-                    input
-                        .focus()
-                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                    input.set_value("John Miller");
-
-                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                        if let Ok(event) = InputEvent::new("input") {
-                            if input.dispatch_event(&event).is_ok() {
-                                sleep(Duration::from_secs(3)).await;
-                            }
-                        }
-                    }
-                },
-                Some(placeholder) if placeholder == "Alice" => {
-                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                    input.click();
-                    input
-                        .focus()
-                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                    input.set_value("John");
-
-                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                        if let Ok(event) = InputEvent::new("input") {
-                            if input.dispatch_event(&event).is_ok() {
-                                sleep(Duration::from_secs(3)).await;
-                            }
-                        }
-                    }
-                },
-                Some(placeholder) if placeholder == "Smith" => {
-                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                    input.click();
-                    input
-                        .focus()
-                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                    input.set_value("Miller");
-
-                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                        if let Ok(event) = InputEvent::new("input") {
-                            if input.dispatch_event(&event).is_ok() {
-                                sleep(Duration::from_secs(3)).await;
-                            }
-                        }
-                    }
-                },
-                Some(placeholder) if placeholder == "alice.smith@example.com" => {
-                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                    input.click();
-                    input
-                        .focus()
-                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                    input.set_value(&infos.lock().unwrap().0);
-
-                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                        if let Ok(event) = InputEvent::new("input") {
-                            if input.dispatch_event(&event).is_ok() {
-                                sleep(Duration::from_secs(3)).await;
-                            }
-                        }
-                    }
-                },
-                Some(placeholder) if placeholder == "MM/DD/YYYY" || placeholder == "DD/MM/YYYY" => {
-                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                    input.click();
-                    input
-                        .focus()
-                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                    input.set_value("02/02/1964");
-
-                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                        if let Ok(event) = InputEvent::new("input") {
-                            if input.dispatch_event(&event).is_ok() {
-                                sleep(Duration::from_secs(3)).await;
-                            }
-                        }
-                    }
-                },
-                _ if input.get_attribute("type") == Some(String::from("checkbox")) => if input.get_attribute("ng-required") == Some(String::from("true")) {
-                    let input: HtmlElement = input.dyn_into().unwrap();
-                    input.click();
-                    sleep(Duration::from_secs(3)).await;
-                }
-                placeholder => log!("Strange input element: placeholder {:?}, type: {:?}", placeholder, input.get_attribute("type"))
-            }
-        }
-
-        // save button
-        if let Some(save_button) = document
-            .get_elements_by_class_name("btn btn-primary ng-scope")
-            .item(0)
-        {
-            let save_button: HtmlElement =
-                save_button.dyn_into().unwrap();
-            save_button.click();
-
-            sleep(Duration::from_secs(2)).await;
-        }
+        // TODO test if third argument can't be equal to the first
+        check_connection_form(&form, Arc::clone(&infos), &document.clone().dyn_into().unwrap()).await.unwrap();
     }
 
     let entries_elements = document.get_elements_by_class_name("entry-method");
@@ -412,84 +419,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         sleep(Duration::from_secs(2)).await;
 
                         // form asking name, email and birthdate
-                        let inputs = original_entry.get_elements_by_tag_name("input");
-                        let mut input_elements = Vec::new();
-                        for idx in 0..inputs.length() {
-                            input_elements.push(inputs.item(idx).unwrap());
-                        }
-                        for input in input_elements {
-                            match input.get_attribute("placeholder") {
-                                Some(placeholder) if placeholder == "Alice Smith" => {
-                                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                                    input.click();
-                                    input
-                                        .focus()
-                                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                                    input.set_value("John Miller");
-
-                                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                                        if let Ok(event) = InputEvent::new("input") {
-                                            if input.dispatch_event(&event).is_ok() {
-                                                sleep(Duration::from_secs(3)).await;
-                                            }
-                                        }
-                                    }
-                                },
-                                Some(placeholder) if placeholder == "alice.smith@example.com" => {
-                                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                                    input.click();
-                                    input
-                                        .focus()
-                                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                                    input.set_value(&infos.lock().unwrap().0);
-
-                                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                                        if let Ok(event) = InputEvent::new("input") {
-                                            if input.dispatch_event(&event).is_ok() {
-                                                sleep(Duration::from_secs(3)).await;
-                                            }
-                                        }
-                                    }
-                                },
-                                Some(placeholder) if placeholder == "MM/DD/YYYY" || placeholder == "DD/MM/YYYY" => {
-                                    let input: HtmlInputElement = input.dyn_into().unwrap();
-                                    input.click();
-                                    input
-                                        .focus()
-                                        .unwrap_or_else(|_e| log!("can't focus input"));
-
-                                    input.set_value("02/02/1964");
-
-                                    if let Ok(input) = input.dyn_into::<EventTarget>() {
-                                        if let Ok(event) = InputEvent::new("input") {
-                                            if input.dispatch_event(&event).is_ok() {
-                                                sleep(Duration::from_secs(3)).await;
-                                            }
-                                        }
-                                    }
-                                },
-                                _ if input.get_attribute("type") == Some(String::from("checkbox")) => if input.get_attribute("ng-required") == Some(String::from("true")) {
-                                    let input: HtmlElement = input.dyn_into().unwrap();
-                                    input.click();
-                                    sleep(Duration::from_secs(3)).await;
-                                }
-                                placeholder => log!("Strange input element: placeholder {:?}, type: {:?}", placeholder, input.get_attribute("type"))
-                            }
-                        }
-
-                        // save button
-                        if let Some(save_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let save_button: HtmlElement =
-                                save_button.dyn_into().unwrap();
-                            save_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
+                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
 
                         // "call to action" button
                         if let Some(big_button) = original_entry

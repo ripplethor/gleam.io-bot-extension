@@ -13,6 +13,7 @@ js-sys = "0.3"
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1.6"
 yew = "0.16"
+string-tools = "0.1"
 
 [dependencies.web-sys]
 version = "0.3"
