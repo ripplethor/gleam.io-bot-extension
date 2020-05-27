@@ -56,6 +56,8 @@ pub enum ActionType {
     Loyalty,
     Subscribe,
     Choose,
+    ViewPost,
+    Hashtags,
     Url,
 }
 
@@ -77,6 +79,8 @@ impl TryFrom<&str> for ActionType {
             "subscribe" => Ok(ActionType::Subscribe),
             "choose" => Ok(ActionType::Choose),
             "url" => Ok(ActionType::Url),
+            "view_post" => Ok(ActionType::ViewPost),
+            "hashtags" => Ok(ActionType::Hashtags),
             unknow => Err(format!("unknow action type: {}", unknow)),
         }
     }

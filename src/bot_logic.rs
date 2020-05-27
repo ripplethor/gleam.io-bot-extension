@@ -126,6 +126,18 @@ fn confirm(container: &Element) -> Result<bool, JsValue> {
     }
 }
 
+fn press_action_button(container: &Element) -> Result<(), JsValue> {
+    if let Some(big_button) = container
+        .get_elements_by_class_name("btn btn-info btn-large btn-embossed")
+        .item(0)
+    {
+        if let Ok(big_button) = big_button.dyn_into::<HtmlElement>() {
+            big_button.click();
+        }
+    }
+    Ok(())
+}
+
 pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
     let window = window().expect("No window");
     let document = window.document().expect("No document");
@@ -161,7 +173,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     for (original_entry, entry) in entries {
         match EntryType::try_from(entry.get_attribute("data-track-event").unwrap()) {
             Ok(entry_type) => {
-                console::log_1(&JsValue::from(format!("{:?}", entry_type)));
+                log!("{:?}", entry_type);
                 let entry: HtmlElement = entry.dyn_into().unwrap();
 
                 match (&entry_type.platform, &entry_type.action_required) {
@@ -220,20 +232,14 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             sleep(Duration::from_secs(2)).await;
                         }
 
-                        // "call to action" button
-                        if let Some(big_button) = original_entry
-                            .get_elements_by_class_name("btn btn-info btn-large btn-embossed")
-                            .item(0)
-                        {
-                            if let Ok(big_button) = big_button.dyn_into::<HtmlElement>() {
-                                big_button.click();
-                                sleep(Duration::from_secs(2)).await;
-                            }
-                        }
+                        press_action_button(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
 
                         confirm(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
                     }
                     (_, ActionType::Enter)
+                    | (_, ActionType::ViewPost)
                     | (Platform::Twitch, ActionType::Follow)
                     | (Platform::Mixer, ActionType::Follow)
                     | (Platform::Custom, ActionType::Action)
@@ -246,16 +252,12 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         // form asking name, email and birthdate
                         check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
 
-                        // "call to action" button
-                        if let Some(big_button) = original_entry
-                            .get_elements_by_class_name("btn btn-info btn-large btn-embossed")
-                            .item(0)
-                        {
-                            if let Ok(big_button) = big_button.dyn_into::<HtmlElement>() {
-                                big_button.click();
-                                sleep(Duration::from_secs(2)).await;
-                            }
+                        if entry_type.action_required == ActionType::ViewPost {
+                            sleep(Duration::from_secs(10)).await;
                         }
+
+                        press_action_button(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
 
                         // form with checkboxes
                         if let Some(first_ul) =
@@ -326,9 +328,11 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         }
 
                         confirm(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
                     }
                     (Platform::Twitter, ActionType::Retweet)
                     | (Platform::Twitter, ActionType::Tweet)
+                    | (Platform::Twitter, ActionType::Hashtags)
                     | (Platform::Twitter, ActionType::Follow) => {
                         entry.click();
                         sleep(Duration::from_secs(5)).await;
@@ -339,7 +343,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         {
                             let follow_button: HtmlElement = follow_button.dyn_into().unwrap();
                             follow_button.click();
-                            sleep(Duration::from_secs(10)).await;
+                            sleep(Duration::from_secs(20)).await;
 
                             confirm(&original_entry);
                             sleep(Duration::from_secs(4)).await;
@@ -367,11 +371,12 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         }
 
                         confirm(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
                     }
                     _ => elog!("Unsupported action {:?} on the platform {:?}", &entry_type.action_required, &entry_type.platform),
                 }
             }
-            Err(e) => console::error_1(&JsValue::from(e)),
+            Err(e) => elog!("Error: {:?}", e),
         }
 
         current += 1.0;
