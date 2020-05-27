@@ -14,7 +14,8 @@ pub enum Platform {
     Loyalty,
     Email,
     Discord,
-    Steam
+    Steam,
+    Submit,
 }
 
 impl TryFrom<&str> for Platform {
@@ -35,6 +36,7 @@ impl TryFrom<&str> for Platform {
             "email" => Ok(Platform::Email),
             "discord" => Ok(Platform::Discord),
             "steam" => Ok(Platform::Steam),
+            "submit" => Ok(Platform::Submit),
             unknow => Err(format!("unknow platform: {}", unknow)),
         }
     }
@@ -54,6 +56,7 @@ pub enum ActionType {
     Loyalty,
     Subscribe,
     Choose,
+    Url,
 }
 
 impl TryFrom<&str> for ActionType {
@@ -73,6 +76,7 @@ impl TryFrom<&str> for ActionType {
             "loyalty" => Ok(ActionType::Loyalty),
             "subscribe" => Ok(ActionType::Subscribe),
             "choose" => Ok(ActionType::Choose),
+            "url" => Ok(ActionType::Url),
             unknow => Err(format!("unknow action type: {}", unknow)),
         }
     }

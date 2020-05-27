@@ -611,7 +611,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             sleep(Duration::from_secs(2)).await;
                         }
                     }
-                    (Platform::Youtube, ActionType::Video) => {
+                    (Platform::Youtube, ActionType::Video) | (Platform::Submit, ActionType::Url) => {
                         entry.click();
                         sleep(Duration::from_secs(2)).await;
 
