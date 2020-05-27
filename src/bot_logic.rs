@@ -111,6 +111,21 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
     Ok(())
 }
 
+fn confirm(container: &Element) -> Result<bool, JsValue> {
+    // confirmation button
+    if let Some(confirmation_button) = container
+        .get_elements_by_class_name("btn btn-primary")
+        .item(0)
+    {
+        let confirmation_button: HtmlElement =
+            confirmation_button.dyn_into()?;
+        confirmation_button.click();
+        Ok(true)
+    } else {
+        Ok(false)
+    }
+}
+
 pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
     let window = window().expect("No window");
     let document = window.document().expect("No document");
@@ -158,18 +173,6 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         // form asking name, email and birthdate
                         check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
 
-                        // save button
-                        if let Some(save_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let save_button: HtmlElement =
-                                save_button.dyn_into().unwrap();
-                            save_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
-
                         let big_button: HtmlElement = original_entry
                             .get_elements_by_class_name(
                                 "btn btn-info btn-large btn-embossed ng-binding",
@@ -197,17 +200,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             }
                         }
 
-                        // confirmation button
-                        if let Some(confirmation_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let confirmation_button: HtmlElement =
-                                confirmation_button.dyn_into().unwrap();
-                            confirmation_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
+                        confirm(&original_entry);
+                        sleep(Duration::from_secs(2)).await;
                     }
                     (Platform::Facebook, ActionType::Visit) => {
                         entry.click();
@@ -237,17 +231,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             }
                         }
 
-                        // confirmation button
-                        if let Some(confirmation_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let confirmation_button: HtmlElement =
-                                confirmation_button.dyn_into().unwrap();
-                            confirmation_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
+                        confirm(&original_entry);
                     }
                     (_, ActionType::Enter)
                     | (Platform::Twitch, ActionType::Follow)
@@ -341,17 +325,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             }
                         }
 
-                        // confirmation button
-                        if let Some(confirmation_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let confirmation_button: HtmlElement =
-                                confirmation_button.dyn_into().unwrap();
-                            confirmation_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
+                        confirm(&original_entry);
                     }
                     (Platform::Twitter, ActionType::Retweet)
                     | (Platform::Twitter, ActionType::Tweet)
@@ -367,19 +341,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             follow_button.click();
                             sleep(Duration::from_secs(10)).await;
 
-                            // confirmation button
-                            if let Some(confirmation_button) = original_entry
-                                .get_elements_by_class_name("btn btn-primary")
-                                .item(0)
-                            {
-                                let confirmation_button: HtmlElement =
-                                    confirmation_button.dyn_into().unwrap();
-                                confirmation_button.click();
-
-                                sleep(Duration::from_secs(2)).await;
-                            }
-
-                            sleep(Duration::from_secs(2)).await;
+                            confirm(&original_entry);
+                            sleep(Duration::from_secs(4)).await;
                         }
                     }
                     (Platform::Youtube, ActionType::Video) | (Platform::Submit, ActionType::Url) => {
@@ -403,17 +366,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             }
                         }
 
-                        // confirmation button
-                        if let Some(confirmation_button) = original_entry
-                            .get_elements_by_class_name("btn btn-primary")
-                            .item(0)
-                        {
-                            let confirmation_button: HtmlElement =
-                                confirmation_button.dyn_into().unwrap();
-                            confirmation_button.click();
-
-                            sleep(Duration::from_secs(2)).await;
-                        }
+                        confirm(&original_entry);
                     }
                     _ => elog!("Unsupported action {:?} on the platform {:?}", &entry_type.action_required, &entry_type.platform),
                 }
