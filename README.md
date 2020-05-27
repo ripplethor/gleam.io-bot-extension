@@ -1,39 +1,22 @@
-# wasm-extension-template
+# Gleam.io bot
 
-This template allows you to generate a "Hello World" web extension running a Rust program compiled to WASM.  
-**That readme is a draft**
+Automated clicks on gleam.io's giveaways.
 
-## Generate a crate
+## Building
 
-First, install the needed tools:
+Wasm-pack and cargo are needed to build the extension.
 
 ```sh
-cargo install cargo-generate
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install wasm-pack
 ```
 
-Then, use cargo-generate to generate a new crate (modify then name at the end of the command):
-
-```sh
-cargo generate --git https://github.com/Mubelotix/wasm-extension-template --name amazing-extension
-```
-
-Your crate is now generated and is ready to be compiled.
-
-## Compile the crate
-
-You can use `wasm-pack` to build the crate.
+Now you can build the extension with:
 
 ```sh
 wasm-pack build --target=web
 ```
 
-Once compiled, the target files are ready to be used in the `pkg` folder.
+## Usage requirements
 
-## Use your crate
-
-Web browsers allow developpers to test web extensions before publishment.
-See your browser's specific instructions to do that.
-The generated `manifest.json` file is located in the `pkg` folder.
-By default, your extension will run only on example.com.
-You should want to modify the manifest (see [the doc](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json)).
+Before use, you have to set up your web browser and social media. Otherwise, the bot will do strange things because it assumes that everything is setup. First, you need to be connected to a gleam.io account. To create an account, participate in a competition for the first time and enter your information. You can find a random competition using [Googleam](https://googleam.mubelotix.dev/). The bot will follow automatically on the websites Twitter, Twitch, and Mixer. All these accounts are optional (except the gleam.io's account), but you will get a lot more entries if you are connected, and that means that you will be more likely to win the giveaways. I suggest you create a new account on all these platforms, because the bot will follow everything asked by the giveaways, and that can taint your personal accounts.
