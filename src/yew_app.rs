@@ -27,6 +27,7 @@ pub enum Msg {
     EmailUpdate(String),
     NameUpdate(String),
     ChangeTab(Tab),
+    AddToStats(usize),
     Launch,
 }
 
@@ -101,6 +102,17 @@ impl Component for Model {
                     })
                 }
             },
+            Msg::AddToStats(new_entries) => {
+                let mut total_entries = match self.storage.get("stats_total_entries").map(|t| t.map(|t| t.parse::<usize>())) {
+                    Ok(Some(Ok(total_entries))) => total_entries,
+                    _ => {
+                        elog!("Failed to read stats");
+                        0
+                    },
+                };
+                total_entries += new_entries;
+                self.storage.set("stats_total_entries", &total_entries.to_string()).unwrap_or_else(|e| elog!("Failed to store stats: {:?}", e));
+            }
         }
         true
     }
@@ -174,9 +186,18 @@ impl Component for Model {
                 }
             },
             Tab::Stats => {
+                let total_entries = match self.storage.get("stats_total_entries").map(|t| t.map(|t| t.parse::<usize>())) {
+                    Ok(Some(Ok(total_entries))) => total_entries,
+                    _ => {
+                        elog!("Failed to read stats");
+                        0
+                    },
+                };
+
                 html! {
                     <div>
-                        {"Stats will be available soon. Boost my efficiency by writing a mail at mubelotix@gmail.com!"}<br/>
+                        {format!("Total entries: {}", total_entries)}<br/>
+                        {"More stats will be available in the future."}<br/>
                         <br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Main))>{"Go back"}</button>
                     </div>

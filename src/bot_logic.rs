@@ -14,6 +14,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     let window = window().expect("No window");
     let document = window.document().expect("No document");
 
+    let entries_before = document.get_elements_by_class_name("status ng-binding").item(0).unwrap().inner_html().trim().parse::<usize>().unwrap();
+
     // form asking name, email and birthdate
     if let Some(form) = document.get_elements_by_class_name("contestant compact-box form-compact ng-pristine ng-scope ng-valid-pattern ng-invalid ng-invalid-required ng-valid-email").item(0) {
 
@@ -658,5 +660,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     }
 
     link.send_message(Msg::Done);
+
+    link.send_message(Msg::AddToStats(document.get_elements_by_class_name("status ng-binding").item(0).unwrap().inner_html().trim().parse::<usize>().unwrap() - entries_before));
+
     Ok(JsValue::null())
 }
