@@ -3,7 +3,8 @@
     "version" : "2.2",
     "description" : "Automated clicks on gleam.io's giveaways.",
     "permissions": [
-        "activeTab"
+        "https://twitter.com/intent/*?*&gleambot=true",
+        "https://gleam.io/*"
     ],
 
     "icons": {
