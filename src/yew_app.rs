@@ -5,8 +5,6 @@ use std::sync::{Arc, Mutex};
 use crate::checkbox::*;
 use crate::bot_logic::run;
 use wasm_bindgen_futures::*;
-use crate::messages::*;
-use crate::util::get_random_u32_between;
 
 pub enum Tab {
     Main,

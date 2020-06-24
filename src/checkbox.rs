@@ -10,7 +10,7 @@ pub struct Checkbox<T: Clone + Default + 'static> {
 }
 
 impl<T: Clone + Default> Checkbox<T> {
-    pub fn is_checked(&self) -> bool {
+    pub fn _is_checked(&self) -> bool {
         self.checked
     }
 }

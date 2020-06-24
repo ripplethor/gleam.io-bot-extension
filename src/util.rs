@@ -27,7 +27,7 @@ macro_rules! elog {
     }
 }
 
-pub fn get_random_u32_between(min: u32, under: u32) -> u32 {
+pub fn _get_random_u32_between(min: u32, under: u32) -> u32 {
     let crypto = window().unwrap().crypto().unwrap();
     let mut random = [0; 4];
     crypto.get_random_values_with_u8_array(&mut random).unwrap();

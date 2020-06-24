@@ -7,10 +7,11 @@ pub enum Message<T: std::fmt::Display> {
     Info(T),
     Other(T),
     Danger(T),
+    Error(T),
 }
 
 impl<T: std::fmt::Display> Message<T> {
-    pub fn as_html(&self) -> Html {
+    pub fn _as_html(&self) -> Html {
         match self {
             Message::Warning(message) => html! {
                 <div><div class="warn_message"><b>{"Warning: "}</b>{message}</div><br/></div>
@@ -28,8 +29,17 @@ impl<T: std::fmt::Display> Message<T> {
                 <div><div class="unknown_message">{message}</div><br/></div>
             },
             Message::Danger(message) => html! {
-                <div><div class="danger_message"><b>{"WARNING: "}</b>{message}</div><br/></div>
+                <div><div class="danger_message"><b>{"DANGER: "}</b>{message}</div><br/></div>
+            },
+            Message::Error(message) => html! {
+                <div><div class="danger_message"><b>{"ERROR: "}</b>{message}</div><br/></div>
             },
         }
+    }
+}
+
+impl<U: std::fmt::Debug> std::convert::From<U> for Message<String> {
+    fn from(error: U) -> Self {
+        Message::Error(format!("{:?}", error))
     }
 }

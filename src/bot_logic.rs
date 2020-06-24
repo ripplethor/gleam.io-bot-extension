@@ -6,7 +6,7 @@ use std::time::Duration;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use yew::prelude::*;
-use crate::yew_app::{Model, Msg};
+use crate::{yew_app::{Model, Msg}, messages::Message};
 use std::convert::TryFrom;
 use std::sync::{Arc, Mutex};
 use string_tools::*;
@@ -138,25 +138,25 @@ fn press_action_button(container: &Element) -> Result<(), JsValue> {
     Ok(())
 }
 
-pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<JsValue, JsValue> {
+pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, String)>>) -> Result<(), Message<String>> {
     let window = window().expect("No window");
     let document = window.document().expect("No document");
 
-    let entries_before = document.get_elements_by_class_name("status ng-binding").item(0).unwrap().inner_html().trim().parse::<usize>().unwrap();
+    let entries_before = document.get_elements_by_class_name("status ng-binding").item(0)?.inner_html().trim().parse::<usize>()?;
 
     // form asking name, email and birthdate
     if let Some(form) = document.get_elements_by_class_name("contestant compact-box form-compact ng-pristine ng-scope ng-valid-pattern ng-invalid ng-invalid-required ng-valid-email").item(0) {
 
         // TODO test if third argument can't be equal to the first
-        check_connection_form(&form, Arc::clone(&infos), &document.clone().dyn_into().unwrap()).await.unwrap();
+        check_connection_form(&form, Arc::clone(&infos), &document.clone().dyn_into()?).await?;
     }
 
     let entries_elements = document.get_elements_by_class_name("entry-method");
 
     let mut entries = Vec::new();
     for entry_idx in 0..entries_elements.length() {
-        let original_entry = entries_elements.item(entry_idx).unwrap();
-        let entry = original_entry.first_element_child().unwrap();
+        let original_entry = entries_elements.item(entry_idx)?;
+        let entry = original_entry.first_element_child()?;
         if let Some(class) = entry.get_attribute("class") {
             if class.contains("mandatory") && !class.contains("done") {
                 entries.insert(0, (original_entry, entry));
@@ -171,10 +171,10 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     let len = entries.len() as f64;
     let mut current = 0.0;
     for (original_entry, entry) in entries {
-        match EntryType::try_from(entry.get_attribute("data-track-event").unwrap()) {
+        match EntryType::try_from(entry.get_attribute("data-track-event")?) {
             Ok(entry_type) => {
                 log!("{:?}", entry_type);
-                let entry: HtmlElement = entry.dyn_into().unwrap();
+                let entry: HtmlElement = entry.dyn_into()?;
 
                 match (&entry_type.platform, &entry_type.action_required) {
                     (Platform::Youtube, ActionType::VisitChannel)
@@ -183,18 +183,18 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         sleep(Duration::from_secs(2)).await;
 
                         // form asking name, email and birthdate
-                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
+                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await?;
 
                         let big_button: HtmlElement = original_entry
                             .get_elements_by_class_name(
                                 "btn btn-info btn-large btn-embossed ng-binding",
                             )
                             .item(0)
-                            .unwrap()
+                            ?
                             .first_element_child()
-                            .unwrap()
+                            ?
                             .dyn_into()
-                            .unwrap();
+                            ?;
                         big_button.click();
                         sleep(Duration::from_secs(2)).await;
 
@@ -205,7 +205,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             if let Some(Ok(select)) = original_entry.get_elements_by_tag_name("select").item(0).map(|e| e.dyn_into::<HtmlElement>()) {
                                 if let Ok(event) = Event::new("change") {
                                     if select.dispatch_event(&event).is_ok() {
-                                        option.set_attribute("selected", "selected").unwrap();
+                                        option.set_attribute("selected", "selected")?;
                                         sleep(Duration::from_secs(2)).await;
                                     }
                                 }
@@ -220,14 +220,14 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         sleep(Duration::from_secs(1)).await;
 
                         // form asking name, email and birthdate
-                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
+                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await?;
 
                         // special facebook link
                         if let Some(facebook_link) = original_entry
                             .get_elements_by_class_name("facebook-heading ng-binding")
                             .item(0)
                         {
-                            let facebook_link: HtmlElement = facebook_link.dyn_into().unwrap();
+                            let facebook_link: HtmlElement = facebook_link.dyn_into()?;
                             facebook_link.click();
                             sleep(Duration::from_secs(2)).await;
                         }
@@ -250,7 +250,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         sleep(Duration::from_secs(2)).await;
 
                         // form asking name, email and birthdate
-                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.unwrap();
+                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await?;
 
                         if entry_type.action_required == ActionType::ViewPost {
                             sleep(Duration::from_secs(10)).await;
@@ -276,7 +276,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             if let Some(Ok(select)) = original_entry.get_elements_by_tag_name("select").item(0).map(|e| e.dyn_into::<HtmlElement>()) {
                                 if let Ok(event) = Event::new("change") {
                                     if select.dispatch_event(&event).is_ok() {
-                                        option.set_attribute("selected", "selected").unwrap();
+                                        option.set_attribute("selected", "selected")?;
                                         sleep(Duration::from_secs(2)).await;
                                     }
                                 }
@@ -341,7 +341,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             .get_elements_by_class_name("xl twitter-button")
                             .item(0)
                         {
-                            let follow_button: HtmlElement = follow_button.dyn_into().unwrap();
+                            let follow_button: HtmlElement = follow_button.dyn_into()?;
                             follow_button.click();
                             sleep(Duration::from_secs(20)).await;
 
@@ -365,7 +365,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
 
                                 input.set_value("https://www.youtube.com/watch?v=dVVZaZ8yO6o");
 
-                                dispatch_input_event(input).unwrap();
+                                dispatch_input_event(input)?;
                                 sleep(Duration::from_secs(4)).await;
                             }
                         }
@@ -385,7 +385,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
 
     link.send_message(Msg::Done);
 
-    link.send_message(Msg::AddToStats(document.get_elements_by_class_name("status ng-binding").item(0).unwrap().inner_html().trim().parse::<usize>().unwrap() - entries_before));
+    link.send_message(Msg::AddToStats(document.get_elements_by_class_name("status ng-binding").item(0)?.inner_html().trim().parse::<usize>()? - entries_before));
 
-    Ok(JsValue::null())
+    Ok(())
 }
