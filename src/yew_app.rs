@@ -21,7 +21,6 @@ pub struct Model {
     tab: Tab,
     progress: usize,
     progress_state: BotState,
-    message: &'static Message<&'static str>,
 }
 
 pub enum Msg {
@@ -57,11 +56,7 @@ impl Component for Model {
 
         let infos = Arc::new(Mutex::new((email, storage.get("gleam_bot_name").ok().flatten().unwrap_or_else(|| String::from("Undefined Random")))));
 
-        let message_idx = get_random_u32_between(0, MESSAGES.len() as u32);
-        let message = &MESSAGES[message_idx as usize];
-
         Self {
-            message,
             link,
             infos,
             storage,
@@ -165,7 +160,6 @@ impl Component for Model {
                         }<br/><br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Settings))>{"Settings"}</button><br/><br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Stats))>{"Stats"}</button><br/><br/>
-                        {self.message.as_html()}
                     </div>
                 }
             }

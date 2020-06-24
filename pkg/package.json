@@ -3,7 +3,7 @@
   "collaborators": [
     "Mubelotix <mubelotix@gmail.com>"
   ],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "files": [
     "gleam_extension_bg.wasm",
     "gleam_extension.js",
