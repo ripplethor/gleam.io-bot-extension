@@ -1,6 +1,6 @@
 {
     "name" : "Gleam.io bot",
-    "version" : "2.1",
+    "version" : "2.2",
     "description" : "Automated clicks on gleam.io's giveaways.",
     "permissions": [
         "activeTab"

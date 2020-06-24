@@ -1,6 +1,6 @@
 [package]
 name = "gleam-extension"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Mubelotix <mubelotix@gmail.com>"]
 edition = "2018"
 
