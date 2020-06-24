@@ -373,10 +373,18 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         confirm(&original_entry);
                         sleep(Duration::from_secs(2)).await;
                     }
-                    _ => elog!("Unsupported action {:?} on the platform {:?}", &entry_type.action_required, &entry_type.platform),
+                    _ => {
+                        let msg = format!("Unsupported action {:?} on the platform {:?}", &entry_type.action_required, &entry_type.platform);
+                        elog!("{}", msg);
+                        link.send_message(Msg::LogMessage(Message::Warning(msg)));
+                    },
                 }
             }
-            Err(e) => elog!("Error: {:?}", e),
+            Err(e) => {
+                let msg = format!("Error: {:?}", e);
+                elog!("{}", msg);
+                link.send_message(Msg::LogMessage(Message::Error(msg)));
+            },
         }
 
         current += 1.0;

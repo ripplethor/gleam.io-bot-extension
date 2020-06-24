@@ -3,7 +3,7 @@ use std::rc::Rc;
 use web_sys::*;
 use std::sync::{Arc, Mutex};
 use crate::checkbox::*;
-use crate::bot_logic::run;
+use crate::{bot_logic::run, messages::Message};
 use wasm_bindgen_futures::*;
 
 pub enum Tab {
@@ -19,6 +19,7 @@ pub struct Model {
     tab: Tab,
     progress: usize,
     progress_state: BotState,
+    messages: Vec<Message<String>>,
 }
 
 pub enum Msg {
@@ -28,6 +29,7 @@ pub enum Msg {
     NameUpdate(String),
     ChangeTab(Tab),
     AddToStats(usize),
+    LogMessage(Message<String>),
     Launch,
 }
 
@@ -61,6 +63,7 @@ impl Component for Model {
             tab: Tab::Main,
             progress: 0,
             progress_state: BotState::Waiting,
+            messages: Vec::new(),
         }
     }
 
@@ -98,10 +101,20 @@ impl Component for Model {
                     self.progress = 0;
                     self.progress_state = BotState::Running;
                     spawn_local(async move {
-                        run(link2, infos2).await;
+                        let link3 = Rc::clone(&link2);
+                        match run(link2, infos2).await {
+                            Ok(()) => (),
+                            Err(msg) => {
+                                link3.send_message(Msg::Done);
+                                link3.send_message(Msg::LogMessage(msg));
+                            }
+                        }
                     })
                 }
             },
+            Msg::LogMessage(msg) => {
+                self.messages.push(msg);
+            }
             Msg::AddToStats(new_entries) => {
                 let mut total_entries = match self.storage.get("stats_total_entries").map(|t| t.map(|t| t.parse::<usize>())) {
                     Ok(Some(Ok(total_entries))) => total_entries,
