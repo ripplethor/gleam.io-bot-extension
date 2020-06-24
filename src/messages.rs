@@ -11,7 +11,7 @@ pub enum Message<T: std::fmt::Display> {
 }
 
 impl<T: std::fmt::Display> Message<T> {
-    pub fn _as_html(&self) -> Html {
+    pub fn as_html(&self) -> Html {
         match self {
             Message::Warning(message) => html! {
                 <div><div class="warn_message"><b>{"Warning: "}</b>{message}</div><br/></div>

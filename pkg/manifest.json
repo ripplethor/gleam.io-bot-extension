@@ -19,15 +19,15 @@
             "js": ["inject_module.js"]
         },
         {
-            "matches": ["https://twitter.com/intent/follow?*&original_referer=https://gleam.io/*"],
+            "matches": ["https://twitter.com/intent/follow?*&gleambot=true"],
             "js": ["twitter/follow.js"]
         },
         {
-            "matches": ["https://twitter.com/intent/retweet?tweet_id=*&original_referer=https://gleam.io/*"],
+            "matches": ["https://twitter.com/intent/retweet?*&gleambot=true"],
             "js": ["twitter/retweet.js"]
         },
         {
-            "matches": ["https://twitter.com/intent/tweet?text=*&original_referer=https://gleam.io/*"],
+            "matches": ["https://twitter.com/intent/tweet?*&gleambot=true"],
             "js": ["twitter/tweet.js"]
         }
     ],

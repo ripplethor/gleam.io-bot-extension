@@ -7,14 +7,21 @@ child.innerHTML = `function sleep(ms) {
 
 async function run() {
     try {
-        console.log("retweeting");
-        retweet_button = document.getElementsByClassName("button submit selected")[0];
-        retweet_button.click();
-        console.log("retweeted");
-        await sleep(10000);
+        await sleep(7000);
+        console.log("running");
+
+        var button = document.evaluate("//div[@data-testid='confirmationSheetConfirm']//div[1]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        button.click();
+
+        console.log("done");
+        await sleep(3000);
         window.close();
     }
-    catch (ex) {window.close();}
+    catch (ex) {
+        console.log("failed run");
+        await sleep(3000);
+        window.close();
+    }
 }
 
 run()`;

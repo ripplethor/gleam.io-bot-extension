@@ -171,6 +171,7 @@ impl Component for Model {
                         }<br/><br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Settings))>{"Settings"}</button><br/><br/>
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Stats))>{"Stats"}</button><br/><br/>
+                        { for self.messages.iter().map(Message::as_html) }
                     </div>
                 }
             }

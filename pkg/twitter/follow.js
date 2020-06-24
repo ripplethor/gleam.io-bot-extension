@@ -7,15 +7,21 @@ child.innerHTML = `function sleep(ms) {
 
 async function run() {
     try {
-        console.log("following");
-        follow_form = document.getElementById('follow_btn_form');
-        follow_button = follow_form.getElementsByTagName("button")[0];
-        follow_button.click();
-        console.log("followed");
-        await sleep(10000);
+        await sleep(7000);
+        console.log("running");
+
+        var button = document.evaluate("//div[@data-testid='confirmationSheetConfirm']//div[1]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        button.click();
+
+        console.log("done");
+        await sleep(3000);
         window.close();
     }
-    catch (ex) {window.close();}
+    catch (ex) {
+        console.log("failed run");
+        await sleep(3000);
+        window.close();
+    }
 }
 
 run()`;

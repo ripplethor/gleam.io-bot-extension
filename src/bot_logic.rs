@@ -336,17 +336,20 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                     | (Platform::Twitter, ActionType::Follow) => {
                         entry.click();
                         sleep(Duration::from_secs(5)).await;
+                        
 
                         if let Some(follow_button) = original_entry
                             .get_elements_by_class_name("xl twitter-button")
                             .item(0)
                         {
-                            let follow_button: HtmlElement = follow_button.dyn_into()?;
-                            follow_button.click();
-                            sleep(Duration::from_secs(20)).await;
+                            let mut url = follow_button.get_attribute("href")?;
+                            url.push_str("&gleambot=true");
+                            window.open_with_url(&url)?;
 
+                            sleep(Duration::from_secs(11)).await;
+                            
                             confirm(&original_entry);
-                            sleep(Duration::from_secs(4)).await;
+                            sleep(Duration::from_secs(2)).await;
                         }
                     }
                     (Platform::Youtube, ActionType::Video) | (Platform::Submit, ActionType::Url) => {
@@ -381,9 +384,8 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                 }
             }
             Err(e) => {
-                let msg = format!("Error: {:?}", e);
-                elog!("{}", msg);
-                link.send_message(Msg::LogMessage(Message::Error(msg)));
+                elog!("{}", e);
+                link.send_message(Msg::LogMessage(Message::Error(e)));
             },
         }
 
