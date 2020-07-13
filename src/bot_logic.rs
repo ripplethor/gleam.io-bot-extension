@@ -272,7 +272,7 @@ pub async fn run(
                         }
 
                         press_action_button(&original_entry);
-                        sleep(Duration::from_secs(2)).await;
+                        sleep(Duration::from_secs(3)).await;
 
                         confirm(&original_entry);
                         sleep(Duration::from_secs(2)).await;
