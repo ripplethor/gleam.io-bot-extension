@@ -1,4 +1,3 @@
-
 use yew::prelude::*;
 
 pub struct Checkbox<T: Clone + Default + 'static> {
@@ -25,7 +24,7 @@ impl<T: Clone + Default> Component for Checkbox<T> {
             checked: properties.checked,
             label: properties.label,
             id: properties.id,
-            callback: properties.onchange
+            callback: properties.onchange,
         }
     }
 
@@ -72,7 +71,7 @@ pub struct CheckboxProp<T: Clone + Default> {
 
 #[derive(Clone)]
 pub enum CheckboxId {
-    Twitter
+    Twitter,
 }
 
 impl Default for CheckboxId {

@@ -12,7 +12,9 @@ pub async fn sleep(duration: Duration) {
                 duration.as_millis() as i32,
             )
             .unwrap();
-    })).await.unwrap();
+    }))
+    .await
+    .unwrap();
 }
 
 macro_rules! log {

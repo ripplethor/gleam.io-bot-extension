@@ -1,10 +1,10 @@
-use yew::prelude::*;
-use std::rc::Rc;
-use web_sys::*;
-use std::sync::{Arc, Mutex};
 use crate::checkbox::*;
 use crate::{bot_logic::run, messages::Message};
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use wasm_bindgen_futures::*;
+use web_sys::*;
+use yew::prelude::*;
 
 pub enum Tab {
     Main,
@@ -37,7 +37,7 @@ pub enum Msg {
 pub enum BotState {
     Waiting,
     Running,
-    Ended
+    Ended,
 }
 
 impl Component for Model {
@@ -47,14 +47,21 @@ impl Component for Model {
         let link = Rc::new(link);
         let window = window().unwrap();
         let storage = window.local_storage().unwrap().unwrap();
-        
+
         let email = if let Ok(Some(email)) = storage.get("gleam_bot_email") {
             email
         } else {
             String::from("unknown@email.com")
         };
 
-        let infos = Arc::new(Mutex::new((email, storage.get("gleam_bot_name").ok().flatten().unwrap_or_else(|| String::from("Undefined Random")))));
+        let infos = Arc::new(Mutex::new((
+            email,
+            storage
+                .get("gleam_bot_name")
+                .ok()
+                .flatten()
+                .unwrap_or_else(|| String::from("Undefined Random")),
+        )));
 
         Self {
             link,
@@ -93,7 +100,7 @@ impl Component for Model {
             }
             Msg::ProgressChange(p) => {
                 self.progress = p;
-            },
+            }
             Msg::Launch => {
                 if self.progress_state == BotState::Waiting {
                     let link2 = Rc::clone(&self.link);
@@ -111,20 +118,26 @@ impl Component for Model {
                         }
                     })
                 }
-            },
+            }
             Msg::LogMessage(msg) => {
                 self.messages.push(msg);
             }
             Msg::AddToStats(new_entries) => {
-                let mut total_entries = match self.storage.get("stats_total_entries").map(|t| t.map(|t| t.parse::<usize>())) {
+                let mut total_entries = match self
+                    .storage
+                    .get("stats_total_entries")
+                    .map(|t| t.map(|t| t.parse::<usize>()))
+                {
                     Ok(Some(Ok(total_entries))) => total_entries,
                     _ => {
                         elog!("Failed to read stats");
                         0
-                    },
+                    }
                 };
                 total_entries += new_entries;
-                self.storage.set("stats_total_entries", &total_entries.to_string()).unwrap_or_else(|e| elog!("Failed to store stats: {:?}", e));
+                self.storage
+                    .set("stats_total_entries", &total_entries.to_string())
+                    .unwrap_or_else(|e| elog!("Failed to store stats: {:?}", e));
             }
         }
         true
@@ -137,11 +150,11 @@ impl Component for Model {
         };
         let email = match guard.0.as_str() {
             "unknown@email.com" => "",
-            email => email
+            email => email,
         };
         let name = match guard.1.as_str() {
             "Undefined Random" => "",
-            name => name
+            name => name,
         };
 
         match self.tab {
@@ -187,7 +200,7 @@ impl Component for Model {
                             {"Your name: "}
                             <input type="text" class="ng-pristine ng-untouched ng-valid ng-not-empty ng-valid-required ng-valid-pattern" placeholder="Alice Smith" oninput=self.link.callback(|e: InputData| Msg::NameUpdate(e.value)) value=name/>
                         </label><br/>
-                    
+
                         {"INFO: These options are a preview of the next update. For now it is not working at all."}<br/>
                         <br/>
                         <Checkbox<CheckboxId> id=CheckboxId::Twitter label="Follow on Twitch"/>
@@ -198,14 +211,18 @@ impl Component for Model {
                         <button class="btn btn-primary ng-binding" onclick=self.link.callback(|e: _| Msg::ChangeTab(Tab::Main))>{"Save"}</button>
                     </div>
                 }
-            },
+            }
             Tab::Stats => {
-                let total_entries = match self.storage.get("stats_total_entries").map(|t| t.map(|t| t.parse::<usize>())) {
+                let total_entries = match self
+                    .storage
+                    .get("stats_total_entries")
+                    .map(|t| t.map(|t| t.parse::<usize>()))
+                {
                     Ok(Some(Ok(total_entries))) => total_entries,
                     _ => {
                         elog!("Failed to read stats");
                         0
-                    },
+                    }
                 };
 
                 html! {
