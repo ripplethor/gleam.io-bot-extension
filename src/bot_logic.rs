@@ -19,7 +19,7 @@ fn dispatch_input_event<T: Into<EventTarget>>(element: T) -> Result<(), JsValue>
     Ok(())
 }
 
-async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(String, String)>>, where_to_find_save_button: &Element) -> Result<(), JsValue> {
+async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(String, String)>>, where_to_find_save_button: &Element) -> Result<(), (JsValue, &'static str, u32)> {
     let inputs = original_entry.get_elements_by_tag_name("input");
     let mut input_elements = Vec::new();
     for idx in 0..inputs.length() {
@@ -28,7 +28,7 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
     for input in input_elements {
         match input.get_attribute("placeholder") {
             Some(placeholder) if placeholder == "Alice Smith" => {
-                let input: HtmlInputElement = input.dyn_into()?;
+                let input: HtmlInputElement = input.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
                 input.click();
                 input
                     .focus()
@@ -36,11 +36,11 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
 
                 input.set_value(&infos.lock().unwrap().1);
 
-                dispatch_input_event(input)?;
+                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             },
             Some(placeholder) if placeholder == "Alice" => {
-                let input: HtmlInputElement = input.dyn_into()?;
+                let input: HtmlInputElement = input.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
                 input.click();
                 input
                     .focus()
@@ -48,7 +48,7 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
 
                 input.set_value(get_all_before(&infos.lock().unwrap().1, " "));
 
-                dispatch_input_event(input)?;
+                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             },
             Some(placeholder) if placeholder == "Smith" => {
@@ -60,11 +60,11 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
 
                 input.set_value(get_all_after(&infos.lock().unwrap().1, " "));
 
-                dispatch_input_event(input)?;
+                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             },
             Some(placeholder) if placeholder == "alice.smith@example.com" => {
-                let input: HtmlInputElement = input.dyn_into()?;
+                let input: HtmlInputElement = input.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
                 input.click();
                 input
                     .focus()
@@ -72,11 +72,11 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
 
                 input.set_value(&infos.lock().unwrap().0);
 
-                dispatch_input_event(input)?;
+                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             },
             Some(placeholder) if placeholder == "MM/DD/YYYY" || placeholder == "DD/MM/YYYY" => {
-                let input: HtmlInputElement = input.dyn_into()?;
+                let input: HtmlInputElement = input.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
                 input.click();
                 input
                     .focus()
@@ -84,11 +84,11 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
 
                 input.set_value("02/02/1964");
 
-                dispatch_input_event(input)?;
+                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             },
             _ if input.get_attribute("type") == Some(String::from("checkbox")) => if input.get_attribute("ng-required") == Some(String::from("true")) {
-                let input: HtmlElement = input.dyn_into()?;
+                let input: HtmlElement = input.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
                 input.click();
                 sleep(Duration::from_secs(3)).await;
             }
@@ -102,7 +102,7 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
         .item(0)
     {
         let save_button: HtmlElement =
-            save_button.dyn_into()?;
+            save_button.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
         save_button.click();
 
         sleep(Duration::from_secs(2)).await;
@@ -111,14 +111,14 @@ async fn check_connection_form(original_entry: &Element, infos: Arc<Mutex<(Strin
     Ok(())
 }
 
-fn confirm(container: &Element) -> Result<bool, JsValue> {
+fn confirm(container: &Element) -> Result<bool, (JsValue, &'static str, u32)> {
     // confirmation button
     if let Some(confirmation_button) = container
         .get_elements_by_class_name("btn btn-primary")
         .item(0)
     {
         let confirmation_button: HtmlElement =
-            confirmation_button.dyn_into()?;
+            confirmation_button.dyn_into().map_err(|e| (e.into(), file!(), line!()))?;
         confirmation_button.click();
         Ok(true)
     } else {
@@ -126,7 +126,7 @@ fn confirm(container: &Element) -> Result<bool, JsValue> {
     }
 }
 
-fn press_action_button(container: &Element) -> Result<(), JsValue> {
+fn press_action_button(container: &Element) -> Result<(), (JsValue, &'static str, u32)> {
     if let Some(big_button) = container
         .get_elements_by_class_name("btn btn-info btn-large btn-embossed")
         .item(0)
@@ -142,21 +142,21 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
     let window = window().expect("No window");
     let document = window.document().expect("No document");
 
-    let entries_before = document.get_elements_by_class_name("status ng-binding").item(0)?.inner_html().trim().parse::<usize>()?;
+    let entries_before = document.get_elements_by_class_name("status ng-binding").item(0).ok_or_else(|| ("None", file!(), line!()))?.inner_html().trim().parse::<usize>().map_err(|e| (e, file!(), line!()))?;
 
-    // form asking name, email and birthdate
+    log!("Entering personal information");
     if let Some(form) = document.get_elements_by_class_name("contestant compact-box form-compact ng-pristine ng-scope ng-valid-pattern ng-invalid ng-invalid-required ng-valid-email").item(0) {
 
         // TODO test if third argument can't be equal to the first
-        check_connection_form(&form, Arc::clone(&infos), &document.clone().dyn_into()?).await?;
+        check_connection_form(&form, Arc::clone(&infos), &document.document_element().unwrap()).await?;
     }
 
+    log!("Getting entry methods");
     let entries_elements = document.get_elements_by_class_name("entry-method");
-
     let mut entries = Vec::new();
     for entry_idx in 0..entries_elements.length() {
-        let original_entry = entries_elements.item(entry_idx)?;
-        let entry = original_entry.first_element_child()?;
+        let original_entry = entries_elements.item(entry_idx).ok_or_else(|| ("None", file!(), line!()))?;
+        let entry = original_entry.first_element_child().ok_or_else(|| ("None", file!(), line!()))?;
         if let Some(class) = entry.get_attribute("class") {
             if class.contains("mandatory") && !class.contains("done") {
                 entries.insert(0, (original_entry, entry));
@@ -168,13 +168,14 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
         }
     }
 
+    log!("Entering main loop");
     let len = entries.len() as f64;
     let mut current = 0.0;
     for (original_entry, entry) in entries {
-        match EntryType::try_from(entry.get_attribute("data-track-event")?) {
+        match EntryType::try_from(entry.get_attribute("data-track-event").ok_or_else(|| ("None", file!(), line!()))?) {
             Ok(entry_type) => {
                 log!("{:?}", entry_type);
-                let entry: HtmlElement = entry.dyn_into()?;
+                let entry: HtmlElement = entry.dyn_into().map_err(|e| (e, file!(), line!()))?;
 
                 match (&entry_type.platform, &entry_type.action_required) {
                     (Platform::Youtube, ActionType::VisitChannel)
@@ -190,11 +191,9 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                                 "btn btn-info btn-large btn-embossed ng-binding",
                             )
                             .item(0)
-                            ?
-                            .first_element_child()
-                            ?
-                            .dyn_into()
-                            ?;
+                            .ok_or_else(|| ("None", file!(), line!()))?
+                            .first_element_child().ok_or_else(|| ("None", file!(), line!()))?
+                            .dyn_into().map_err(|e| (e, file!(), line!()))?;
                         big_button.click();
                         sleep(Duration::from_secs(2)).await;
 
@@ -205,7 +204,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             if let Some(Ok(select)) = original_entry.get_elements_by_tag_name("select").item(0).map(|e| e.dyn_into::<HtmlElement>()) {
                                 if let Ok(event) = Event::new("change") {
                                     if select.dispatch_event(&event).is_ok() {
-                                        option.set_attribute("selected", "selected")?;
+                                        option.set_attribute("selected", "selected").map_err(|e| (e, file!(), line!()))?;
                                         sleep(Duration::from_secs(2)).await;
                                     }
                                 }
@@ -227,7 +226,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             .get_elements_by_class_name("facebook-heading ng-binding")
                             .item(0)
                         {
-                            let facebook_link: HtmlElement = facebook_link.dyn_into()?;
+                            let facebook_link: HtmlElement = facebook_link.dyn_into().map_err(|e| (e, file!(), line!()))?;
                             facebook_link.click();
                             sleep(Duration::from_secs(2)).await;
                         }
@@ -250,7 +249,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                         sleep(Duration::from_secs(2)).await;
 
                         // form asking name, email and birthdate
-                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await?;
+                        check_connection_form(&original_entry, Arc::clone(&infos), &original_entry).await.map_err(|e| (e, file!(), line!()))?;
 
                         if entry_type.action_required == ActionType::ViewPost {
                             sleep(Duration::from_secs(10)).await;
@@ -276,7 +275,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             if let Some(Ok(select)) = original_entry.get_elements_by_tag_name("select").item(0).map(|e| e.dyn_into::<HtmlElement>()) {
                                 if let Ok(event) = Event::new("change") {
                                     if select.dispatch_event(&event).is_ok() {
-                                        option.set_attribute("selected", "selected")?;
+                                        option.set_attribute("selected", "selected").map_err(|e| (e, file!(), line!()))?;
                                         sleep(Duration::from_secs(2)).await;
                                     }
                                 }
@@ -342,9 +341,9 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
                             .get_elements_by_class_name("xl twitter-button")
                             .item(0)
                         {
-                            let mut url = follow_button.get_attribute("href")?;
+                            let mut url = follow_button.get_attribute("href").ok_or_else(|| ("None", file!(), line!()))?;
                             url.push_str("&gleambot=true");
-                            window.open_with_url(&url)?;
+                            window.open_with_url(&url).map_err(|e| (e, file!(), line!()))?;
 
                             sleep(Duration::from_secs(11)).await;
                             
@@ -368,7 +367,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
 
                                 input.set_value("https://www.youtube.com/watch?v=dVVZaZ8yO6o");
 
-                                dispatch_input_event(input)?;
+                                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                                 sleep(Duration::from_secs(4)).await;
                             }
                         }
@@ -395,7 +394,7 @@ pub async fn run(link: Rc<ComponentLink<Model>>, infos: Arc<Mutex<(String, Strin
 
     link.send_message(Msg::Done);
 
-    link.send_message(Msg::AddToStats(document.get_elements_by_class_name("status ng-binding").item(0)?.inner_html().trim().parse::<usize>()? - entries_before));
+    link.send_message(Msg::AddToStats(document.get_elements_by_class_name("status ng-binding").item(0).ok_or_else(|| ("None", file!(), line!()))?.inner_html().trim().parse::<usize>().map_err(|e| (e, file!(), line!()))? - entries_before));
 
     Ok(())
 }
