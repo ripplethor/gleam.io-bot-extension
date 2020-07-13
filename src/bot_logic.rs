@@ -42,7 +42,7 @@ async fn check_connection_form(
 
                 input.set_value(&infos.lock().unwrap().1);
 
-                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
+                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             }
             Some(placeholder) if placeholder == "Alice" => {
@@ -53,7 +53,7 @@ async fn check_connection_form(
 
                 input.set_value(get_all_before(&infos.lock().unwrap().1, " "));
 
-                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
+                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             }
             Some(placeholder) if placeholder == "Smith" => {
@@ -63,7 +63,7 @@ async fn check_connection_form(
 
                 input.set_value(get_all_after(&infos.lock().unwrap().1, " "));
 
-                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
+                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             }
             Some(placeholder) if placeholder == "alice.smith@example.com" => {
@@ -74,7 +74,7 @@ async fn check_connection_form(
 
                 input.set_value(&infos.lock().unwrap().0);
 
-                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
+                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             }
             Some(placeholder) if placeholder == "MM/DD/YYYY" || placeholder == "DD/MM/YYYY" => {
@@ -85,7 +85,7 @@ async fn check_connection_form(
 
                 input.set_value("02/02/1964");
 
-                dispatch_input_event(input).map_err(|e| (e.into(), file!(), line!()))?;
+                dispatch_input_event(input).map_err(|e| (e, file!(), line!()))?;
                 sleep(Duration::from_secs(3)).await;
             }
             _ if input.get_attribute("type") == Some(String::from("checkbox")) => {
