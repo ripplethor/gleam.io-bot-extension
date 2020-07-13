@@ -30,6 +30,7 @@
     border: 1px solid #faebcc;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }
 
 .stat_message {
@@ -38,6 +39,7 @@
     border: 1px solid #d6e9c6;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }
 
 .tip_message {
@@ -46,6 +48,7 @@
     border: 1px solid #bce8f1;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }
 
 .danger_message {
@@ -54,6 +57,7 @@
     border: 1px solid #ebccd1;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }
 
 .info_message {
@@ -62,6 +66,7 @@
     border: 1px solid #3689C5;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }
 
 .unknown_message {
@@ -70,4 +75,5 @@
     border: 1px solid grey;
     padding: .5rem;
     border-radius: 5px;
+    white-space: pre-line;
 }

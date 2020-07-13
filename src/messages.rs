@@ -39,7 +39,7 @@ impl<T: std::fmt::Display> Message<T> {
 }
 
 impl<U: std::fmt::Debug> std::convert::From<(U, &'static str, u32)> for Message<String> {
-    fn from(error: (U, &'static str, u32)) -> Self {
-        Message::Error(format!("Whoops, the bot encountered an error. Please report this issue by writting an email at mubelotix@gmail.com or by opening an issue on Github (https://github.com/Mubelotix/gleam.io-bot-extension). Thank you very much for your patience. Error message: \"{:?}\" ", error))
+    fn from((error, file, line): (U, &'static str, u32)) -> Self {
+        Message::Error(format!("Whoops, the bot panicked at {:?}, {}:{}.\nPlease report this issue by writting an email at mubelotix@gmail.com or by opening an issue on Github (https://github.com/Mubelotix/gleam.io-bot-extension). Thank you very much for your patience.", error, file, line))
     }
 }
